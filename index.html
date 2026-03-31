@@ -1,11 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tier 2 Support Workspace — Krama Capstone</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tier 2 Support Workspace — Krama Capstone</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;font-size:13px}
+.app{display:flex;height:100vh;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 16px;display:flex;align-items:center;gap:16px;height:44px;flex-shrink:0}
+.topbar-brand{font-weight:700;font-size:14px}
+.topbar-sub{font-size:12px;color:#888}
+.topbar-stats{display:flex;gap:8px;margin-left:auto}
+.stat-pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:290px;background:#fff;border-right:1px solid #e8e8e8;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:10px 14px;border-bottom:1px solid #e8e8e8}
+.sidebar-title{font-weight:700;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.6px}
+.ticket-list{overflow-y:auto;flex:1}
+.ticket-row{padding:10px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-left:3px solid transparent}
+.ticket-row:hover{background:#f9f9f9}
+.ticket-row.active{background:#EBF4FF}
+.ticket-row.breach{border-left-color:#E24B4A}
+.ticket-row.warn{border-left-color:#EF9F27}
+.ticket-row.ok{border-left-color:#639922}
+.t-top{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.t-id{font-size:10px;color:#bbb}
+.pbadge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px}
+.p1{background:#FCEBEB;color:#A32D2D}
+.p2{background:#FAEEDA;color:#854F0B}
+.p3{background:#EAF3DE;color:#3B6D11}
+.p4{background:#F1EFE8;color:#5F5E5A}
+.vip{font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;background:#EEEDFE;color:#534AB7}
+.t-subject{font-size:12px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-meta{display:flex;align-items:center;gap:6px;font-size:10px;color:#bbb}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dopen{background:#378ADD}.dpending{background:#EF9F27}.dresolved{background:#639922}
+.sla-b{color:#E24B4A;font-weight:600}.sla-w{color:#EF9F27;font-weight:600}.sla-g{color:#639922;font-weight:600}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e8e8e8}
+.tab{padding:11px 18px;font-size:12px;font-weight:500;cursor:pointer;color:#888;border-bottom:2px solid transparent}
+.tab.on{color:#185FA5;border-bottom-color:#185FA5}
+.area{flex:1;overflow-y:auto;padding:16px}
+.tdetail{display:grid;grid-template-columns:1fr 255px;gap:14px}
+.cpanel{display:flex;flex-direction:column;gap:10px}
+.cheader{background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:14px}
+.ctitle{font-size:15px;font-weight:600;margin-bottom:8px}
+.cbadges{display:flex;gap:6px;flex-wrap:wrap}
+.bdg{font-size:10px;padding:2px 8px;border-radius:12px;font-weight:500}
+.bblue{background:#E6F1FB;color:#185FA5}.bgray{background:#F1EFE8;color:#5F5E5A}
+.borange{background:#FAEEDA;color:#854F0B}.bred{background:#FCEBEB;color:#A32D2D}
+.bgreen{background:#EAF3DE;color:#3B6D11}.bpurple{background:#EEEDFE;color:#534AB7}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.msg{background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:12px}
+.msg.sys{background:#f9f9f9}
+.mhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.avcust{background:#E6F1FB;color:#185FA5}.avagent{background:#EAF3DE;color:#3B6D11}.avsys{background:#F1EFE8;color:#5F5E5A}
+.mname{font-weight:600;font-size:12px}.mtime{font-size:10px;color:#bbb;margin-left:auto}
+.mbody{font-size:12px;line-height:1.65;color:#333;white-space:pre-wrap}
+.compose{background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:14px}
+.clabel{font-weight:700;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+select,input,textarea{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;font-family:inherit;margin-bottom:8px}
+textarea{resize:vertical;line-height:1.6}
+.btnrow{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+button{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}
+button:hover{background:#f5f5f5}
+button:disabled{opacity:.4;cursor:not-allowed}
+.bprimary{background:#185FA5;color:#fff;border-color:#185FA5}.bprimary:hover{background:#0C447C;color:#fff}
+.bdanger{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1}
+.bwarn{background:#FAEEDA;color:#854F0B;border-color:#FAC775}
+.bsuccess{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97}
+.spanel{display:flex;flex-direction:column;gap:10px}
+.icard{background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:12px}
+.ictitle{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.irow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.irow:last-child{border-bottom:none}
+.ilabel{font-size:11px;color:#888}.ival{font-size:11px;font-weight:600}
+.kbart{background:#fff;border-radius:8px;border:1px solid #e8e8e8;padding:10px;cursor:pointer;margin-bottom:6px}
+.kbart:hover{background:#f9f9f9}
+.katitle{font-size:12px;font-weight:500;margin-bottom:3px}.katag{font-size:10px;color:#aaa}
+.slackprev{background:#3b1f46;border-radius:8px;padding:12px;margin-top:8px}
+.schan{font-size:11px;color:#b9a3d3;margin-bottom:6px;font-weight:600}
+.smsg{font-size:11px;color:#e8dff0;line-height:1.7;white-space:pre-wrap}
+.eodgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.mcard{background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:14px;text-align:center}
+.mval{font-size:24px;font-weight:700}.mlabel{font-size:10px;color:#888;margin-top:4px}
+.csatrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.csatlabel{width:100px;font-size:11px;color:#888}
+.csatbg{flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.csatfill{height:100%;border-radius:4px}
+.csatpct{font-size:11px;font-weight:600;width:36px;text-align:right}
+table.sys{width:100%;border-collapse:collapse}
+table.sys th{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #e8e8e8;text-align:left}
+table.sys td{font-size:11px;padding:8px;border-bottom:1px solid #f5f5f5}
+.toast{position:fixed;bottom:20px;right:20px;background:#185FA5;color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;z-index:999;animation:fi .2s}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useMemo}=React;
+const T=[
+  {id:"T-1041",sub:"SSO login broken — all 200 users locked out",pri:"P1",st:"open",cust:"Acme Corp",plan:"Enterprise",mrr:4200,ten:"2.1 yrs",prev:3,sla:-8,vip:true,cat:"SSO / Auth",tags:["sso","auth","critical"],
+   msgs:[{r:"customer",n:"James Whitfield",t:"8:02 AM",txt:"Our entire team is locked out. SSO stopped working after your update last night. Board meeting in 2 hours — this is a P1."},{r:"agent",n:"Tier 1 — Sara",t:"8:15 AM",txt:"Hi James, checked the SSO config — settings look correct on our end. Escalating to Tier 2."},{r:"system",n:"System",t:"8:16 AM",txt:"Ticket escalated to Tier 2. SLA breach imminent."}]},
+  {id:"T-1038",sub:"API returning 403 on /v2/exports endpoint",pri:"P2",st:"open",cust:"Meridian Health",plan:"Pro",mrr:890,ten:"8 mo",prev:1,sla:34,vip:false,cat:"API",tags:["api","403","exports"],
+   msgs:[{r:"customer",n:"Priya Nair",t:"7:30 AM",txt:"Getting a 403 Forbidden on POST /v2/exports since yesterday. Data pipeline is broken. Error: 'Insufficient permissions for bulk export'."},{r:"agent",n:"Tier 1 — Marco",t:"7:55 AM",txt:"Tried reproducing this. The permissions issue seems related to a recent role-based access change. Escalating to Tier 2."}]},
+  {id:"T-1035",sub:"Webhook payload missing fields — line_items gone",pri:"P2",st:"open",cust:"Stackline",plan:"Pro",mrr:1100,ten:"1.3 yrs",prev:5,sla:67,vip:false,cat:"Webhooks",tags:["webhooks","api"],
+   msgs:[{r:"customer",n:"Devon Park",t:"6:15 AM",txt:"The order.completed webhook is missing 'line_items' and 'metadata'. Our integration depends on these — worked fine until 3 days ago."}]},
+  {id:"T-1032",sub:"Bulk CSV export timing out on files over 50MB",pri:"P3",st:"open",cust:"Brightwave Analytics",plan:"Growth",mrr:420,ten:"5 mo",prev:2,sla:180,vip:false,cat:"Export",tags:["export","timeout"],
+   msgs:[{r:"customer",n:"Alice Cho",t:"5:00 AM",txt:"Every export over ~50MB just spins and times out at 90 seconds. Smaller exports are fine."}]},
+  {id:"T-1027",sub:"2FA code not accepted — account locked",pri:"P2",st:"pending",cust:"TrueNorth Legal",plan:"Enterprise",mrr:3100,ten:"1.8 yrs",prev:2,sla:15,vip:true,cat:"Auth / 2FA",tags:["2fa","auth"],
+   msgs:[{r:"customer",n:"Morgan Lee",t:"Yesterday 4:45 PM",txt:"Our CTO can't log in — 2FA code from authenticator not accepted. Account locked after 5 attempts."},{r:"agent",n:"Tier 1 — Sara",t:"Yesterday 5:00 PM",txt:"Account unlocked but 2FA issue persists — escalating to Tier 2."}]},
+  {id:"T-1021",sub:"Billing charged twice for March — duplicate invoice",pri:"P2",st:"open",cust:"Cascade Labs",plan:"Pro",mrr:760,ten:"11 mo",prev:3,sla:42,vip:false,cat:"Billing",tags:["billing","duplicate"],
+   msgs:[{r:"customer",n:"Yuki Tanaka",t:"Yesterday 1:00 PM",txt:"Charged twice for March — $760 on March 1 and again March 5. Both show on our statement."}]},
+  {id:"T-1018",sub:"Data import failing on rows with special characters",pri:"P3",st:"open",cust:"Pebble CRM",plan:"Growth",mrr:290,ten:"4 mo",prev:0,sla:450,vip:false,cat:"Import",tags:["import","encoding"],
+   msgs:[{r:"customer",n:"Chloe Martin",t:"Yesterday 10:00 AM",txt:"Import fails on rows with accented characters (é, ü, ñ) or ampersands. Error: 'Malformed CSV row 24'."}]},
+  {id:"T-1014",sub:"User roles not applying after team invite",pri:"P3",st:"resolved",cust:"Fieldwork Co",plan:"Starter",mrr:80,ten:"1 mo",prev:0,sla:600,vip:false,cat:"Permissions",tags:["permissions","roles"],
+   msgs:[{r:"customer",n:"Sam Osei",t:"2 days ago",txt:"New team members invited as Viewer but have full edit access."},{r:"agent",n:"Tier 2 — You",t:"2 days ago",txt:"Confirmed the bug — bulk invite flow not inheriting roles. Fixed on your account. Patch deploying globally this week."}]},
+  {id:"T-1011",sub:"Email notifications stopped after workflow update",pri:"P2",st:"open",cust:"Orbit Logistics",plan:"Pro",mrr:670,ten:"9 mo",prev:4,sla:28,vip:false,cat:"Notifications",tags:["email","workflow"],
+   msgs:[{r:"customer",n:"Dana Kim",t:"Today 6:00 AM",txt:"Outbound email notifications stopped completely after updating our workflow yesterday. Shows Active but no emails firing."}]},
+  {id:"T-1008",sub:"SAML metadata upload failing — XML parse error",pri:"P1",st:"open",cust:"Fortis Bank",plan:"Enterprise",mrr:8400,ten:"3.2 yrs",prev:7,sla:-22,vip:true,cat:"SSO / Auth",tags:["saml","sso","enterprise"],
+   msgs:[{r:"customer",n:"Claire Bergmann",t:"Yesterday 9:00 PM",txt:"Reconfiguring SAML IdP after cert rotation. Every metadata upload gives 'XML Parse Error: Invalid signature element'. Cert is valid — confirmed with our IdP team."},{r:"agent",n:"Tier 1 — Marco",t:"Yesterday 9:20 PM",txt:"Tried multiple XML formats — same error. Needs Tier 2 to investigate the XML parsing logic."}]},
+  {id:"T-1005",sub:"Dashboard blank for one specific user",pri:"P3",st:"open",cust:"Maple Ventures",plan:"Growth",mrr:310,ten:"6 mo",prev:1,sla:280,vip:false,cat:"UI Bug",tags:["dashboard","ui"],
+   msgs:[{r:"customer",n:"Tom Nakata",t:"Today 7:30 AM",txt:"One user (lisa@mapleventures.com) sees a blank dashboard after login. Everyone else is fine. Tried two browsers."}]},
+  {id:"T-1002",sub:"Can't add custom fields to contact object",pri:"P4",st:"open",cust:"Sprout CRM",plan:"Starter",mrr:60,ten:"2 wk",prev:0,sla:720,vip:false,cat:"Config",tags:["config","custom-fields"],
+   msgs:[{r:"customer",n:"Ali Hassan",t:"Today 8:00 AM",txt:"How do I add a custom field to the Contact object? Can't find it in settings."}]},
+  {id:"T-0999",sub:"Rate limiting hitting below plan thresholds",pri:"P2",st:"open",cust:"Quantum IO",plan:"Pro",mrr:950,ten:"1.1 yrs",prev:2,sla:55,vip:false,cat:"API",tags:["api","rate-limit"],
+   msgs:[{r:"customer",n:"Neha Sharma",t:"Today 7:00 AM",txt:"Hitting 429 errors at ~40 req/min but our plan allows 100 req/min. Started last Wednesday."}]},
+  {id:"T-0995",sub:"CSV export includes deleted records",pri:"P3",st:"open",cust:"Lumen Health",plan:"Growth",mrr:480,ten:"7 mo",prev:1,sla:360,vip:false,cat:"Export",tags:["export","data"],
+   msgs:[{r:"customer",n:"Ravi Patel",t:"Yesterday 3:00 PM",txt:"When I export our contacts list, deleted records are still appearing in the CSV. Soft-delete doesn't seem to filter on export."}]},
+  {id:"T-0991",sub:"Zapier integration breaking on large payloads",pri:"P3",st:"open",cust:"ClockWork Agency",plan:"Pro",mrr:540,ten:"10 mo",prev:2,sla:240,vip:false,cat:"Integrations",tags:["zapier","integration","api"],
+   msgs:[{r:"customer",n:"Lea Hoffman",t:"Yesterday 11:00 AM",txt:"Our Zap fails when the payload is over 2MB. Smaller payloads work fine. Error: 'Webhook response timeout'."}]},
+];
+
+const KB=[
+  {id:1,tag:"Auth",title:"Troubleshooting SSO / SAML configuration errors",body:"Check IdP metadata XML for correct certificate format. Common issues: expired certs, incorrect ACS URL, clock skew >5min. Verify attribute mapping includes email claim. For SAML signature errors, confirm the signing algorithm matches (SHA-256 recommended)."},
+  {id:2,tag:"API",title:"Resolving 403 errors on the exports API endpoint",body:"403 on /v2/exports means the API token lacks 'export:read' scope. Re-generate token with correct scopes in Settings > API Keys. Enterprise plans also require the 'bulk_export' feature flag to be enabled by an admin."},
+  {id:3,tag:"Auth",title:"Unlocking accounts and resetting 2FA",body:"In Admin > Users, search for the user and click Unlock Account. To reset 2FA: click Reset MFA — user re-enrolls on next login. For authenticator sync issues, advise user to check device time sync (NTP)."},
+  {id:4,tag:"Webhooks",title:"Webhook payload field reference and changelog",body:"As of v2.4, order.completed includes: id, status, amount, customer, line_items, metadata, timestamps. The line_items field was removed in v2.1 and re-added in v2.4. Check webhook subscription version in Settings > Webhooks."},
+  {id:5,tag:"Import",title:"CSV import encoding requirements",body:"Importer expects UTF-8 encoding. Files from Excel default to Windows-1252, which breaks on accented characters. Advise customer to re-save as UTF-8 CSV. Ampersands must not be HTML-escaped in raw CSV."},
+  {id:6,tag:"DNS",title:"Custom domain CNAME verification troubleshooting",body:"After CNAME propagation, verification can take up to 10 min on our side. If still failing: (1) confirm CNAME points to app.platform.com not bare domain, (2) check for conflicting A records, (3) use Reverify button in Settings > Domains."},
+  {id:7,tag:"Export",title:"Bulk export timeout — known issue and workaround",body:"Exports >50MB time out at the 90s gateway limit. Workaround: use date-range filters to split into <30MB chunks. Engineering tracking as BUG-2847. ETA Q2. Inform customer and offer to monitor."},
+  {id:8,tag:"Billing",title:"Duplicate charge — refund process",body:"Duplicate charges occur when a payment retry fires in the same billing cycle. To refund: Admin > Billing > Invoices > find duplicate > Issue Refund. Log in Stripe with reference number. Send customer confirmation email within 1 hour."},
+  {id:9,tag:"Notifications",title:"Email notification workflow debugging guide",body:"Check: (1) workflow trigger conditions, (2) email To field is not blank, (3) sending domain is verified in Settings > Email. Common cause after workflow edits: From address gets cleared. Re-enter and save."},
+  {id:10,tag:"API",title:"Rate limit tiers and debugging 429 errors",body:"Starter: 20 req/min. Growth: 60 req/min. Pro: 100 req/min. Enterprise: custom. If customer reports limits below their plan, check for concurrent connections on the same token. Rotate to a new API key to isolate."},
+];
+
+const MACROS=[
+  {id:"m1",label:"Acknowledgment + investigating",text:"Hi {name},\n\nThank you for reaching out. I'm a Tier 2 agent and I've just picked up your ticket.\n\nI can see the issue you're describing and I'm investigating now. I'll have an update for you within {time}.\n\nBest,\n[Your name]"},
+  {id:"m2",label:"Resolution — issue fixed",text:"Hi {name},\n\nI've resolved the issue on your account. Here's what I found:\n\n[Root cause]\n[Fix applied]\n\nPlease test and let me know if everything is working. I'll keep this ticket open for 24 hours.\n\nBest,\n[Your name]"},
+  {id:"m3",label:"Escalated to engineering — customer update",text:"Hi {name},\n\nI've confirmed this is a bug on our end and escalated to engineering with full reproduction steps. Reference: [ENG-XXXX].\n\nExpected update: [timeframe]. I'll follow up personally when we have a resolution.\n\nSorry for the disruption.\n\nBest,\n[Your name]"},
+  {id:"m4",label:"Needs more info",text:"Hi {name},\n\nTo investigate further, could you provide:\n\n1. The exact error message\n2. Steps to reproduce\n3. Browser / OS\n4. When the issue started\n\nLooking forward to getting this resolved.\n\nBest,\n[Your name]"},
+  {id:"m5",label:"Workaround available — bug confirmed",text:"Hi {name},\n\nI've confirmed this is a known issue our team is actively working on.\n\nWorkaround in the meantime:\n[Steps]\n\nI'll notify you as soon as the fix is deployed.\n\nBest,\n[Your name]"},
+];
+
+function slaClass(m){return m<0?"breach":m<60?"warn":"ok"}
+function slaText(m){if(m<0)return`${Math.abs(m)}m overdue`;if(m<60)return`${m}m left`;return`${Math.floor(m/60)}h${m%60>0?` ${m%60}m`:""}` }
+function slaTc(m){return m<0?"sla-b":m<60?"sla-w":"sla-g"}
+
+function App(){
+  const [active,setActive]=useState(T[0]);
+  const [tab,setTab]=useState("ticket");
+  const [kbq,setKbq]=useState("");
+  const [macro,setMacro]=useState("");
+  const [reply,setReply]=useState("");
+  const [escNote,setEscNote]=useState("");
+  const [escChan,setEscChan]=useState("#eng-escalations");
+  const [toast,setToast]=useState(null);
+  const [resolved,setResolved]=useState({});
+  const [kbart,setKbart]=useState(null);
+
+  const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(null),2500)};
+
+  const kbRes=useMemo(()=>{
+    if(!kbq.trim())return KB;
+    const q=kbq.toLowerCase();
+    return KB.filter(a=>a.title.toLowerCase().includes(q)||a.tag.toLowerCase().includes(q)||a.body.toLowerCase().includes(q));
+  },[kbq]);
+
+  const openC=T.filter(t=>(resolved[t.id]||t.st)==="open").length;
+  const breachC=T.filter(t=>t.sla<0).length;
+  const pendC=T.filter(t=>(resolved[t.id]||t.st)==="pending").length;
+
+  return(
+    <div className="app">
+      <div className="topbar">
+        <span className="topbar-brand">SupportDesk Pro</span>
+        <span className="topbar-sub">Tier 2 Workspace — Krama Capstone</span>
+        <div className="topbar-stats">
+          <span className="stat-pill" style={{background:"#E6F1FB",color:"#185FA5"}}>{openC} open</span>
+          <span className="stat-pill" style={{background:"#FAEEDA",color:"#854F0B"}}>{pendC} pending</span>
+          <span className="stat-pill" style={{background:"#FCEBEB",color:"#A32D2D"}}>{breachC} SLA breach</span>
+        </div>
+      </div>
+      <div className="main">
+        <div className="sidebar">
+          <div className="sidebar-header"><span className="sidebar-title">Queue ({T.length})</span></div>
+          <div className="ticket-list">
+            {T.map(t=>(
+              <div key={t.id} className={`ticket-row ${slaClass(t.sla)}${active.id===t.id?" active":""}`}
+                onClick={()=>{setActive(t);setTab("ticket");setReply("");setMacro("");}}>
+                <div className="t-top">
+                  <span className="t-id">{t.id}</span>
+                  <span className={`pbadge ${t.pri.toLowerCase()}`}>{t.pri}</span>
+                  {t.vip&&<span className="vip">VIP</span>}
+                </div>
+                <div className="t-subject">{t.sub}</div>
+                <div className="t-meta">
+                  <span className={`sdot d${resolved[t.id]||t.st}`}></span>
+                  <span>{t.cust}</span>
+                  <span style={{marginLeft:"auto"}} className={slaTc(t.sla)}>{slaText(t.sla)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="content">
+          <div className="tabs">
+            {["ticket","kb","escalate","eod"].map(t=>(
+              <div key={t} className={`tab${tab===t?" on":""}`} onClick={()=>setTab(t)}>
+                {t==="ticket"?"Ticket Detail":t==="kb"?"Knowledge Base":t==="escalate"?"Escalate":"End-of-Day"}
+              </div>
+            ))}
+          </div>
+          <div className="area">
+            {tab==="ticket"&&(
+              <div className="tdetail">
+                <div className="cpanel">
+                  <div className="cheader">
+                    <div className="ctitle">{active.sub}</div>
+                    <div className="cbadges">
+                      <span className={`bdg ${active.pri==="P1"?"bred":active.pri==="P2"?"borange":"bgray"}`}>{active.pri}</span>
+                      <span className="bdg bblue">{active.cat}</span>
+                      {active.vip&&<span className="bdg bpurple">VIP Account</span>}
+                      <span className="bdg bgray">{resolved[active.id]||active.st}</span>
+                      <span className={`bdg ${active.sla<0?"bred":active.sla<60?"borange":"bgreen"}`}>SLA: {slaText(active.sla)}</span>
+                    </div>
+                  </div>
+                  <div className="msgs">
+                    {active.msgs.map((m,i)=>(
+                      <div key={i} className={`msg${m.r==="system"?" sys":""}`}>
+                        <div className="mhead">
+                          <div className={`av av${m.r==="customer"?"cust":m.r==="system"?"sys":"agent"}`}>
+                            {m.n.split(" ").map(w=>w[0]).join("").slice(0,2)}
+                          </div>
+                          <span className="mname">{m.n}</span>
+                          <span className="mtime">{m.t}</span>
+                        </div>
+                        <div className="mbody">{m.txt}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="compose">
+                    <div className="clabel">Compose Reply</div>
+                    <select value={macro} onChange={e=>{setMacro(e.target.value);const m=MACROS.find(x=>x.id===e.target.value);if(m)setReply(m.text.replace("{name}",active.cust).replace("{time}","1 hour"));}}>
+                      <option value="">— Select a macro / template —</option>
+                      {MACROS.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+                    </select>
+                    <textarea rows={5} placeholder="Type reply or select macro above..." value={reply} onChange={e=>setReply(e.target.value)}/>
+                    <div className="btnrow">
+                      <button className="bprimary" onClick={()=>{if(!reply.trim())return;showToast("Reply sent — ticket updated");setReply("");setMacro("");}}>Send Reply</button>
+                      <button className="bsuccess" onClick={()=>{setResolved(s=>({...s,[active.id]:"resolved"}));showToast("Resolved — CSAT survey sent");}}>Mark Resolved</button>
+                      <button className="bwarn" onClick={()=>setTab("escalate")}>Escalate to Eng</button>
+                    </div>
+                  </div>
+                </div>
+                <div className="spanel">
+                  <div className="icard">
+                    <div className="ictitle">Customer Account</div>
+                    {[["Company",active.cust],["Plan",active.plan],["MRR","$"+active.mrr.toLocaleString()],["Tenure",active.ten],["Prev tickets",active.prev],["VIP",active.vip?"Yes":"No"]].map(([l,v])=>(
+                      <div key={l} className="irow"><span className="ilabel">{l}</span><span className="ival">{v}</span></div>
+                    ))}
+                  </div>
+                  <div className="icard">
+                    <div className="ictitle">Tags</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{active.tags.map(t=><span key={t} className="bdg bgray">{t}</span>)}</div>
+                  </div>
+                  <div className="icard">
+                    <div className="ictitle">Quick KB</div>
+                    <input placeholder="Search articles..." value={kbq} onChange={e=>setKbq(e.target.value)} onClick={()=>setTab("kb")}/>
+                    {kbRes.slice(0,3).map(a=>(
+                      <div key={a.id} className="kbart" onClick={()=>{setTab("kb");setKbart(a);}}>
+                        <div className="katitle">{a.title}</div>
+                        <div className="katag">{a.tag}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {tab==="kb"&&(
+              <div style={{maxWidth:680}}>
+                <input placeholder="Search knowledge base..." value={kbq} onChange={e=>{setKbq(e.target.value);setKbart(null);}} style={{marginBottom:12}}/>
+                {kbart?(
+                  <div>
+                    <button style={{marginBottom:12}} onClick={()=>setKbart(null)}>← Back</button>
+                    <div className="icard">
+                      <span className="bdg bblue" style={{marginBottom:8,display:"inline-block"}}>{kbart.tag}</span>
+                      <div style={{fontSize:15,fontWeight:600,margin:"8px 0 10px"}}>{kbart.title}</div>
+                      <div style={{fontSize:13,lineHeight:1.7}}>{kbart.body}</div>
+                      <div className="btnrow" style={{marginTop:12}}>
+                        <button onClick={()=>{setReply(r=>r+"\n\n"+kbart.body);setTab("ticket");showToast("Article added to reply");}}>Insert into Reply</button>
+                      </div>
+                    </div>
+                  </div>
+                ):(
+                  <div>
+                    {kbRes.length===0&&<div style={{textAlign:"center",padding:40,color:"#bbb"}}>No articles match "{kbq}"</div>}
+                    {kbRes.map(a=>(
+                      <div key={a.id} className="kbart" onClick={()=>setKbart(a)}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                          <span className="katitle">{a.title}</span>
+                          <span className="bdg bblue" style={{marginLeft:"auto"}}>{a.tag}</span>
+                        </div>
+                        <div style={{fontSize:11,color:"#888",lineHeight:1.5}}>{a.body.slice(0,100)}...</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {tab==="escalate"&&(
+              <div style={{maxWidth:600}}>
+                <div className="icard" style={{marginBottom:12}}>
+                  <div className="ictitle">Escalating: {active.id}</div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:4}}>{active.sub}</div>
+                  <div style={{fontSize:11,color:"#888"}}>{active.cust} · {active.plan} · ${active.mrr.toLocaleString()} MRR</div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:"#888",marginBottom:4}}>Engineering channel</div>
+                    <select value={escChan} onChange={e=>setEscChan(e.target.value)}>
+                      {["#eng-escalations","#eng-auth","#eng-api","#eng-billing","#eng-infra"].map(c=><option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:"#888",marginBottom:4}}>Reproduction steps & context (required)</div>
+                    <textarea rows={7} placeholder={`Steps to reproduce:\n1. \n2. \n\nExpected:\n\nActual:\n\nAccount: ${active.cust} (${active.plan})\nError: \n\nWhat Tier 1 tried: \n\nImpact: `} value={escNote} onChange={e=>setEscNote(e.target.value)}/>
+                  </div>
+                  {escNote.trim()&&(
+                    <div className="slackprev">
+                      <div className="schan">{escChan}</div>
+                      <div className="smsg">🔴 Tier 2 Escalation — {active.id}{"\n"}{active.sub}{"\n"}Customer: {active.cust} | {active.plan} | ${active.mrr.toLocaleString()} MRR{"\n\n"}{escNote}</div>
+                    </div>
+                  )}
+                  <div className="btnrow">
+                    <button className="bdanger" disabled={!escNote.trim()} onClick={()=>{showToast("Escalated — Slack posted + internal note created");setEscNote("");}}>Post to Slack + Create Internal Note</button>
+                    <button onClick={()=>setTab("ticket")}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {tab==="eod"&&(
+              <div style={{maxWidth:640}}>
+                <div className="eodgrid">
+                  {[["18","Tickets handled"],["12","Resolved"],["4.4","Avg CSAT (of 5)"],["1h 42m","Avg first response"],["2","SLA breaches","#E24B4A"],["3","Escalated to Eng"]].map(([v,l,c])=>(
+                    <div key={l} className="mcard"><div className="mval" style={c?{color:c}:{}}>{v}</div><div className="mlabel">{l}</div></div>
+                  ))}
+                </div>
+                <div className="icard" style={{marginBottom:12}}>
+                  <div className="ictitle">CSAT by category</div>
+                  {[["SSO / Auth",92,"#185FA5"],["API",88,"#3B6D11"],["Billing",96,"#639922"],["Export",74,"#EF9F27"],["UI Bug",81,"#378ADD"]].map(([cat,pct,col])=>(
+                    <div key={cat} className="csatrow">
+                      <span className="csatlabel">{cat}</span>
+                      <div className="csatbg"><div className="csatfill" style={{width:`${pct}%`,background:col}}/></div>
+                      <span className="csatpct">{pct}%</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="icard">
+                  <div className="ictitle">Flag for team standup</div>
+                  <table className="sys">
+                    <thead><tr><th>Pattern</th><th>Count</th><th>Action</th></tr></thead>
+                    <tbody>
+                      <tr><td>SSO cert rotation failures</td><td>3 tickets</td><td><span className="bdg bred">Flag for eng</span></td></tr>
+                      <tr><td>Bulk export timeouts &gt;50MB</td><td>2 tickets</td><td><span className="bdg borange">BUG-2847</span></td></tr>
+                      <tr><td>Webhook missing line_items</td><td>2 tickets</td><td><span className="bdg borange">Docs update needed</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
 </html>
